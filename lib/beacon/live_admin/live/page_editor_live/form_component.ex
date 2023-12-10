@@ -66,7 +66,8 @@ defmodule Beacon.LiveAdmin.PageEditorLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Page published successfully")
-         |> push_navigate(to: to, replace: true)}
+        #  |> push_navigate(to: to, replace: true)
+      }
 
       {:error, changeset} ->
         changeset = Map.put(changeset, :action, :publish)
@@ -96,11 +97,13 @@ defmodule Beacon.LiveAdmin.PageEditorLive.FormComponent do
         changeset = Content.change_page(socket.assigns.site, page)
 
         {:noreply,
-         socket
+         socket=socket
          |> assign(:page, page)
          |> assign_form(changeset)
          |> assign_extra_fields(changeset)
          |> put_flash(:info, "Page updated successfully")}
+
+         handle_event("publish", %{"id" => page.id},socket)
 
       {:error, changeset} ->
         changeset = Map.put(changeset, :action, :update)
@@ -122,9 +125,9 @@ defmodule Beacon.LiveAdmin.PageEditorLive.FormComponent do
         <%= @page_title %>
         <:actions>
           <.button :if={@live_action == :new} phx-disable-with="Saving..." form="page-form" class="uppercase">Create Draft Page</.button>
-          <.button :if={@live_action == :edit} phx-disable-with="Saving..." form="page-form" class="uppercase">Save Changes</.button>
-          <.button :if={@live_action == :edit} phx-click={show_modal("publish-confirm-modal")} phx-target={@myself} class="uppercase">Publish</.button>
-        </:actions>
+          <.button :if={@live_action == :edit} phx-disable-with="Saving..." form="page-form" class="uppercase">Save & Publish</.button>
+          <%!-- <.button :if={@live_action == :edit} phx-click={show_modal("publish-confirm-modal")} phx-target={@myself} class="uppercase">Publish</.button> --%>
+          </:actions>
       </.header>
 
       <.modal id="publish-confirm-modal">
@@ -168,7 +171,7 @@ defmodule Beacon.LiveAdmin.PageEditorLive.FormComponent do
             <% end %>
           </.form>
         </div>
-        <div class="col-span-full lg:col-span-2">
+        <div class="col-span-full lg:col-span-2" style="order: -1">
           <%= template_error(@form[:template]) %>
           <div class="py-6 w-full rounded-[1.25rem] bg-[#0D1829] [&_.monaco-editor-background]:!bg-[#0D1829] [&_.margin]:!bg-[#0D1829]">
             <LiveMonacoEditor.code_editor
